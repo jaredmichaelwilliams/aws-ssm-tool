@@ -134,8 +134,9 @@ class Environment(abcs.Loggable):
     @property
     def region_name(self) -> typing.Optional[str]:
         """Returns the AWS region name."""
+        # Check config first, then existing session (use _session to avoid recursion)
         return self.config.get("region_name") or getattr(
-            getattr(self, "session", None), "region_name", None
+            self._session, "region_name", None
         )
 
     region = region_name
