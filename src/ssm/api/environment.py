@@ -7,6 +7,7 @@ reduces a lot of boilerplate with boto sessions/profiles
 import collections
 
 import boto3
+from botocore import session
 
 from ssm import abcs, util
 
@@ -53,10 +54,23 @@ class Environment(
     profile = profile_name
 
     @property
-    def account_id(self):
-        return self.config.get("account_id")
+    def account_aliases(self):
+        """ """
+        aliases = self.iam.list_account_aliases()
+        return aliases and aliases.get("AccountAliases")
 
-    account = account_id
+    @property
+    def account_alias(self):
+        aliases = self.account_aliases
+        return aliases and aliases[0] or None
+
+    @property
+    def caller_id(self):
+        return self.sts.get_caller_identity()
+
+    @property
+    def account_id(self):
+        return self.caller_id.get("Account")
 
     @property
     def region_name(self):
@@ -75,7 +89,7 @@ class Environment(
             raise ValueError(err.format(config))
         self.config = config
         self.name = self.config["name"]
-        self.logger_name = f"A[{self.name}]"
+        self.logger_name = f"<Env@{self.name}>"
         self.init_session()
         super().__init__(**kwargs)
 
@@ -101,20 +115,9 @@ class Environment(
         self.session = boto3.session.Session(
             profile_name=self.profile_name, region_name=self.region_name
         )
-        self.s3 = self.session.client("s3")
-        self.ec2 = self.session.client("ec2")
-        self.emr = self.session.client("emr")
         self.ssm = self.session.client("ssm")
         self.iam = self.session.client("iam")
         self.sts = self.session.client("sts")
-        self.cloudwatch = self.session.client("cloudwatch")
-        self.route53 = self.session.client("route53")
-        # always us-east-1
-        self.support = boto3.session.Session(
-            profile_name=self.profile_name, region_name="us-east-1"
-        ).client("support")
-        self.redshift = self.session.client("redshift")
-        self.cloudformation = self.session.client("cloudformation")
 
     @property
     def user_names(self):
@@ -152,7 +155,7 @@ class Environment(
         human friendly strings for things like console
         output, i.e. with `secrets shell`, or logging
         """
-        return f"<Environment: {self.name} @ {self.profile_name}>"
+        return f"<Environment `{self.profile_name}` @ {self.account_id}>"
 
     __repr__ = __str__
 
@@ -165,19 +168,17 @@ class Environment(
         return SecretManager(env=self)
 
 
-from botocore import session
-
 Environment.ENV_CONFIGS = collections.OrderedDict()
 Environment.ALL_PROFS = session.Session().available_profiles
-tmp = "loading environments from {} available profiles.."
-LOGGER.debug(tmp.format(len(Environment.ALL_PROFS)))
+tmp = "loading envs from {} available profiles"
+LOGGER.info(tmp.format(len(Environment.ALL_PROFS)))
 for profile_name in Environment.ALL_PROFS:
     # LOGGER.debug("\t{}".format(profile_name))
     Environment.ENV_CONFIGS[profile_name] = dict(
         profile_name=profile_name,
     )
-LOGGER.debug("normalizing and pre-computing env metadata")
+LOGGER.info("loading metadata from envs")
 for env_name, env_config in Environment.ENV_CONFIGS.copy().items():
-    LOGGER.debug(f"\t- {env_name}")
+    LOGGER.info(f"\t- {env_name}")
     env_config["name"] = Environment.normalize_env_name(env_name)
-LOGGER.debug("done loading environment configs")
+LOGGER.info("done loading environment configs")
