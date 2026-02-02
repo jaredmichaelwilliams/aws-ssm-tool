@@ -1,0 +1,116 @@
+{ // BEGIN: top-level pynchon config
+  // Everything here is optional.
+  // Literals only; no templating please!
+  "plugins": [
+    "globals", "render", "gen", "project",
+    "plugins", "jinja", "git", "core", "github", "dockerhub",
+    "python", "pypi", "python-api", "python-cli", "python-libcst",
+  ],
+  // END: top-level config
+  // BEGIN: core plugins-config
+  "python-libcst":{
+    // .libcst.codemod.yaml file:
+    // leave this empty to use a static one
+    // that's already present.  fill it in
+    // to have it recreated when needed and
+    // use pynchon's context for templating it
+    ".libcst.codemod.yaml": {
+      "repo_root": "{{src.root}}",
+      "generated_code_marker": "@generated",
+      "formatter": ["black", "-"],
+      "blacklist_patterns": [],
+      "modules": [
+        "libcst.codemod.commands",
+        "pynchon.codemod.commands",
+      ],
+    },
+
+  },
+  // Config for `globals` plugin: (priority=..)
+  //   All well-behaved plugins will honor values here, appending
+  //   these values to whatever is set explicitly for that plugin
+  "globals": {
+    "exclude_patterns": [
+      ".*[.]pyc",
+      ".*_version[.]py",
+      "**/tests/fixtures/**",
+      "**/build/lib/**",
+      "**/*.egg-info/**",
+    ],
+  },
+
+  // Config for `src` plugin:
+  //   This provides find/search tooling, plus file-header generators, etc
+  "src": {
+    "root": "{{pynchon.root}}/src",
+    "exclude_patterns": [],
+
+    "include_patterns": [
+        "{{src.root}}/**/*.py",
+        "{{src.root}}/**/*.j2",
+      ],
+    "goals": [],
+  },
+
+  // Config for `tests` plugin:
+  //   ...
+  "tests": {
+    "root": "{{pynchon.root}}/tests",
+    "include_patterns": ["**/*.py",],
+    "suite_patterns": ["*/",],
+  },
+
+  // Config for `docs` plugin:
+  //   Runs a webserver to open docs-files
+  "docs": {
+    "root": "{{pynchon.root}}/docs",
+    "include_patterns": [
+        "{{pynchon.root}}/*.md",
+        "{{docs.root}}/**/*.md",
+        "{{docs.root}}/**/*.html",
+      ],
+      "apply_hooks": [],
+  },
+
+  // Config for `dockerhub` plugin:
+  "dockerhub":{
+    "org_name": "robotwranglers",
+    "repo_name": "aws-ssm-tool",
+  },
+
+  // END: core plugins-config
+  // BEGIN: other plugins-config
+
+    // Config for `github` plugin:
+  "github": {},
+
+  // Config for `hooks` plugin:
+   "hooks": {},
+
+
+  // Config for `jinja` plugin:
+  // Planner for finding/rendering project .j2 files
+  "jinja":{
+   "context_vars": {},
+   "filter_includes": [],
+   "exclude_patterns": [],
+   "template_includes": [
+     // Paths to load includes from.
+     // (Used in templates as `{% include .. %}`)
+     "{{docs.root}}/includes",
+   ],
+ },
+
+  // Config for `python-platform` plugin:
+  "python":{},
+
+  // Config for `python-api` plugin:
+  // This generates API docs for python-packages
+  "python-api":{
+    "skip_private_methods": true,
+    "skip_patterns": [],
+  },
+
+   // Config for `pypi` plugin:
+  "pypi": {},
+}
