@@ -22,7 +22,6 @@ build: py-build
 clean: py-clean
 
 py-init:
-	# $(call _announce_target, $@)
 	set -x \
 	; pip install build \
 	; pip install --quiet -e .[dev] \
@@ -57,12 +56,15 @@ pypi-release:
 	--password $${PYPI_TOKEN} \
 	dist/*
 
-docker-release: docker-build
-	echo "docker-release not implemented yet"
-docker-build:
-	echo "docker-build not implemented yet"
+DOCKER_ORG_NAME ?= robotwranglers
+DOCKER_IMAGE_NAME ?= aws-ssm-tool
 
-release: pypi-release docker-release
+docker-build: build-docker
+build-docker:
+	docker build -t $(DOCKER_ORG_NAME)/$(DOCKER_IMAGE_NAME) .
+docker-shell:
+	docker run -it --entrypoint bash \
+		$(DOCKER_ORG_NAME)/$(DOCKER_IMAGE_NAME)
 
 tox-%:
 	tox -e ${*}
@@ -70,21 +72,23 @@ tox-%:
 normalize: tox-normalize
 lint: static-analysis
 static-analysis: tox-static-analysis
+
 test-units: utest
 test-integrations: itest
 smoke-test: stest
+docker-test:
+	docker run --rm -v `pwd`:/workspace -w /workspace \
+		$(DOCKER_ORG_NAME)/$(DOCKER_IMAGE_NAME)
 itest: tox-itest
 utest: tox-utest
 stest: tox-stest
 test: test-units test-integrations smoke-test
-# coverage:
-# 	echo NotImplementedYet
 
 plan: docs-plan
 apply: docs-apply
 
-docs-plan:
-	tox -e docs-plan
 docs: docs-apply
 docs-apply:
 	tox -e docs
+docs-plan:
+	tox -e docs-plan
