@@ -7,6 +7,8 @@ from functools import partial
 
 import click
 
+from ssm.cli import completion
+
 __all__ = [
     "profile",
     "src_profile",
@@ -81,6 +83,7 @@ profile_partial = partial(
     "--profile",
     envvar="AWS_PROFILE",
     help="AWS profile to use.",
+    shell_complete=completion.complete_profiles,
 )
 
 src_profile_partial = partial(
@@ -88,6 +91,7 @@ src_profile_partial = partial(
     "--src-profile",
     help="Source AWS profile.",
     show_default=True,
+    shell_complete=completion.complete_profiles,
 )
 
 dst_profile_partial = partial(
@@ -95,6 +99,7 @@ dst_profile_partial = partial(
     "--dst-profile",
     help="Destination AWS profile.",
     show_default=True,
+    shell_complete=completion.complete_profiles,
 )
 
 profile = profile_partial(

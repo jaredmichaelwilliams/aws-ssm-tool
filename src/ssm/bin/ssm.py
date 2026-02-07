@@ -12,6 +12,7 @@ import click
 import yaml
 
 from ssm import api, cli, util
+from ssm.cli import completion
 from ssm.cli.wrapper import ApiWrapper
 
 LOGGER = util.get_logger(__name__)
@@ -87,7 +88,7 @@ list = ApiWrapper(
         cli.options.profile,
         cli.options.output_format_tree_default,
         cli.options.dirs_only,
-        click.argument("path_prefix", nargs=1, default="/"),
+        click.argument("path_prefix", nargs=1, default="/", shell_complete=completion.complete_paths),
     ],
 )
 
@@ -97,7 +98,7 @@ list_dirs = ApiWrapper(
     extra_options=[
         cli.options.profile,
         cli.options.output_format_stdout_default,
-        click.argument("path_prefix", nargs=1, default="/"),
+        click.argument("path_prefix", nargs=1, default="/", shell_complete=completion.complete_paths),
     ],
 )
 
@@ -112,7 +113,7 @@ stat = ApiWrapper(
         cli.options.profile,
         cli.options.output_format_stdout_default,
         cli.options.caller_context,
-        click.argument("path_prefix", nargs=1, default="/"),
+        click.argument("path_prefix", nargs=1, default="/", shell_complete=completion.complete_paths),
     ],
 )
 
@@ -200,7 +201,7 @@ delete_path = ApiWrapper(
             default=False,
             help="Do not create backup files.",
         ),
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -215,8 +216,8 @@ copy = ApiWrapper(
         cli.options.src_profile_default,
         cli.options.dst_profile_default,
         dry_run_option,
-        click.argument("dst_name", nargs=1),
-        click.argument("src_name", nargs=1),
+        click.argument("dst_name", nargs=1, shell_complete=completion.complete_parameters),
+        click.argument("src_name", nargs=1, shell_complete=completion.complete_parameters),
     ],
 )
 
@@ -227,8 +228,8 @@ copy_many = ApiWrapper(
         cli.options.src_profile_default,
         cli.options.dst_profile_default,
         dry_run_option,
-        click.argument("dst_name", nargs=1),
-        click.argument("src_name", nargs=1),
+        click.argument("dst_name", nargs=1, shell_complete=completion.complete_paths),
+        click.argument("src_name", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -239,8 +240,8 @@ move = ApiWrapper(
         cli.options.src_profile_default,
         cli.options.dst_profile_default,
         dry_run_option,
-        click.argument("dst_name", nargs=1),
-        click.argument("src_name", nargs=1),
+        click.argument("dst_name", nargs=1, shell_complete=completion.complete_parameters),
+        click.argument("src_name", nargs=1, shell_complete=completion.complete_parameters),
     ],
 )
 
@@ -251,8 +252,8 @@ move_many = ApiWrapper(
         cli.options.src_profile_default,
         cli.options.dst_profile_default,
         dry_run_option,
-        click.argument("dst_name", nargs=1),
-        click.argument("src_name", nargs=1),
+        click.argument("dst_name", nargs=1, shell_complete=completion.complete_paths),
+        click.argument("src_name", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -263,7 +264,7 @@ rename = ApiWrapper(
         cli.options.profile,
         dry_run_option,
         click.argument("new_name", nargs=1),
-        click.argument("old_name", nargs=1),
+        click.argument("old_name", nargs=1, shell_complete=completion.complete_parameters),
     ],
 )
 
@@ -321,7 +322,7 @@ count = ApiWrapper(
             default=False,
             help="Break down count by parameter type.",
         ),
-        click.argument("path_prefix", nargs=1, default="/"),
+        click.argument("path_prefix", nargs=1, default="/", shell_complete=completion.complete_paths),
     ],
 )
 
@@ -348,7 +349,7 @@ tree = ApiWrapper(
             default=None,
             help="Maximum depth to display.",
         ),
-        click.argument("path_prefix", nargs=1, default="/"),
+        click.argument("path_prefix", nargs=1, default="/", shell_complete=completion.complete_paths),
     ],
 )
 
@@ -365,8 +366,8 @@ diff = ApiWrapper(
             default=False,
             help="Show actual values in diff output.",
         ),
-        click.argument("dst_path", nargs=1),
-        click.argument("src_path", nargs=1),
+        click.argument("dst_path", nargs=1, shell_complete=completion.complete_paths),
+        click.argument("src_path", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -408,7 +409,7 @@ tags = ApiWrapper(
 @entry.command(name="add-tags")
 @cli.options.profile
 @click.option("--tag", "-t", multiple=True, help="Tag in key=value format.")
-@click.argument("secret_name", nargs=1)
+@click.argument("secret_name", nargs=1, shell_complete=completion.complete_parameters)
 def add_tags_cmd(profile, tag, secret_name):
     """Add tags to a parameter. Use --tag key=value (can be repeated)."""
     tag_list = []
@@ -428,7 +429,7 @@ def add_tags_cmd(profile, tag, secret_name):
 @entry.command(name="remove-tags")
 @cli.options.profile
 @click.option("--key", "-k", multiple=True, help="Tag key to remove.")
-@click.argument("secret_name", nargs=1)
+@click.argument("secret_name", nargs=1, shell_complete=completion.complete_parameters)
 def remove_tags_cmd(profile, key, secret_name):
     """Remove tags from a parameter by key names."""
     if not key:
@@ -449,7 +450,7 @@ sync_pull = ApiWrapper(
         cli.options.profile,
         cli.options.output_format_yaml_default,
         click.argument("output_file", nargs=1),
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -467,7 +468,7 @@ sync_push = ApiWrapper(
             help="Delete parameters not in the input file.",
         ),
         click.argument("input_file", nargs=1),
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -478,7 +479,7 @@ sync_diff = ApiWrapper(
         cli.options.profile,
         cli.options.output_format_yaml_default,
         click.argument("input_file", nargs=1),
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -499,7 +500,7 @@ backup = ApiWrapper(
             help="Exclude metadata (types, descriptions, tags).",
         ),
         click.argument("output_file", nargs=1),
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -551,7 +552,7 @@ env_export = ApiWrapper(
             default=True,
             help="Don't quote values with special characters.",
         ),
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -562,7 +563,7 @@ env_export = ApiWrapper(
 
 @entry.command(name="get-policy")
 @cli.options.profile
-@click.argument("secret_name", nargs=1)
+@click.argument("secret_name", nargs=1, shell_complete=completion.complete_parameters)
 def get_policy_cmd(profile, secret_name):
     """Get the policy for a parameter (expiration, notification)."""
     result = api.get_policy(secret_name, profile=profile)
@@ -592,7 +593,7 @@ def get_policy_cmd(profile, secret_name):
     default=None,
     help="Days without changes before notification.",
 )
-@click.argument("secret_name", nargs=1)
+@click.argument("secret_name", nargs=1, shell_complete=completion.complete_parameters)
 def set_policy_cmd(
     profile, expiration_days, notify_before_days, no_change_days, secret_name
 ):
@@ -627,7 +628,7 @@ def set_policy_cmd(
     show_default=True,
     help="Polling interval in seconds.",
 )
-@click.argument("path_prefix", nargs=1, default="/")
+@click.argument("path_prefix", nargs=1, default="/", shell_complete=completion.complete_paths)
 def watch_cmd(profile, interval, path_prefix):
     """Watch for changes to parameters under a path."""
     click.echo(f"Watching {path_prefix} (interval: {interval}s, Ctrl+C to stop)...")
@@ -659,7 +660,7 @@ def watch_cmd(profile, interval, path_prefix):
     help="Variable in key=value format for template substitution.",
 )
 @click.argument("template_file", nargs=1)
-@click.argument("namespace", nargs=1)
+@click.argument("namespace", nargs=1, shell_complete=completion.complete_paths)
 def put_template_cmd(profile, dry_run, var, template_file, namespace):
     """Create parameters from a template file with variable substitution.
 
@@ -704,7 +705,7 @@ validate = ApiWrapper(
             default=False,
             help="Only check that parameters exist.",
         ),
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -742,7 +743,7 @@ audit = ApiWrapper(
             default=None,
             help="Filter by action (GetParameter, PutParameter, etc.).",
         ),
-        click.argument("path_prefix", nargs=1, default="/"),
+        click.argument("path_prefix", nargs=1, default="/", shell_complete=completion.complete_paths),
     ],
 )
 
@@ -794,7 +795,7 @@ def generate_secret_cmd(length, chars, exclude):
     show_default=True,
     help="Character set to use.",
 )
-@click.argument("secret_name", nargs=1)
+@click.argument("secret_name", nargs=1, shell_complete=completion.complete_parameters)
 def rotate_cmd(profile, dry_run, length, chars, secret_name):
     """Rotate a secret by generating a new random value."""
     result = api.rotate(
@@ -819,7 +820,7 @@ def rotate_cmd(profile, dry_run, length, chars, secret_name):
 @dry_run_option
 @click.option("--from-key", required=True, help="Current KMS key ID or alias.")
 @click.option("--to-key", required=True, help="New KMS key ID or alias.")
-@click.argument("path_prefix", nargs=1)
+@click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths)
 def rekey_cmd(profile, dry_run, from_key, to_key, path_prefix):
     """Re-encrypt parameters with a new KMS key."""
     result = api.rekey(
@@ -877,7 +878,7 @@ verify_access = ApiWrapper(
     extra_options=[
         cli.options.profile,
         cli.options.output_format_yaml_default,
-        click.argument("path_prefix", nargs=1),
+        click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths),
     ],
 )
 
@@ -895,7 +896,7 @@ verify_access = ApiWrapper(
     default=None,
     help="Output file (default: stdout).",
 )
-@click.argument("path_prefix", nargs=1)
+@click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths)
 def export_terraform_cmd(profile, output_file, path_prefix):
     """Export parameters as Terraform aws_ssm_parameter resources."""
     result = api.export_terraform(path_prefix, profile=profile)
@@ -933,7 +934,7 @@ def export_terraform_cmd(profile, output_file, path_prefix):
     default=None,
     help="Output file (default: stdout).",
 )
-@click.argument("path_prefix", nargs=1)
+@click.argument("path_prefix", nargs=1, shell_complete=completion.complete_paths)
 def k8s_export_cmd(profile, secret_name, namespace, output_file, path_prefix):
     """Export parameters as a Kubernetes Secret manifest."""
     result = api.k8s_export(
